@@ -1,0 +1,63 @@
+---
+title: "map assignment"
+author: "William Roloff"
+date: "2022-10-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Data Source:  Data is from the Global Footprint Network, which has the goal of measuring a region's ecological productivity along with the demands that region places on ecosystems.  This is broken down by grazing land, cropland, forest land, and fisheries.  
+
+Spatial Units:  Latitude and Longitude
+
+Purpose of the map:  I chose to produce a map that displays cropland productivity by country, as this variable had a wider range and was therefore more interesting visually.  The image shows how much productive capacity a given country has relative to its population.
+
+```{r}
+library(ggplot2)
+library(maps)
+library(viridisLite)
+library(tidyverse)
+
+
+countries <- read.csv('countries_energy_use.csv')
+#head(countries)
+
+countries$Country[countries$Country == "United States of America"] <- "USA"
+#countries
+
+#filter(countries, Country == "USA")
+
+
+
+#countries_land_use <- map_data('world')
+#head(countries_land_use)
+#countries_land_use[countries_land_use == "USA"] <- "United States of America"
+#filter(countries_land_use, region == "USA")
+```
+
+
+```{r}
+
+countries_land_use <- map_data("world") %>%
+  mutate(region = str_to_title(region),
+         subregion = str_to_title(subregion)) %>%
+  left_join(countries, by = c('region' = "Country"))
+
+#head(countries_land_use)
+
+land_use_map <- ggplot(data = countries_land_use,
+            mapping = aes(x = long, y = lat,
+                          group = group, 
+                          fill = Cropland))
+land_use_map <- land_use_map + geom_polygon(color="white")
+land_use_map <- land_use_map + scale_fill_viridis_c(option="plasma", direction=-1)
+land_use_map <- land_use_map + guides(fill=guide_legend(title="Cropland Productivity"))
+#land_use_map <- land_use_map + coord_map()
+land_use_map
+
+```
+
+
